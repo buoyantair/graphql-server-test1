@@ -6,24 +6,63 @@ import uuidv4 from 'uuid/v4'
 
 import schema from './schema'
 import resolvers from './resolvers'
-import models from './models'
+import models, { sequelize } from './models'
 
+const eraseDatabaseOnSync = true;
 const app = express()
 app.use(cors())
 
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers,
-  context: {
+  context: async () => ({
     models,
-    me: models.users[1]
-  }
+    me: await models.User.findByLogin('Alice')
+  })
 })
 
 server.applyMiddleware({ app, path: '/graphql' })
 
-app.listen({
-  port: 4000
-}, () => {
-  console.log(`Apollo server is running at http://localhost:4000/graphql`)
+sequelize.sync({
+  force: eraseDatabaseOnSync
+}).then(async () => {
+  if (eraseDatabaseOnSync) {
+    await createUsersWithMessages();
+  }
+
+  app.listen({
+    port: 4000
+  }, () => {
+    console.log(`Apollo server is running at http://localhost:4000/graphql`)
+  })
 })
+
+const createUsersWithMessages = async () => {
+  await models.User.create({
+    username: 'Alice',
+    messages: [
+      {
+        text: 'Hello world!'
+      }
+    ]
+  },
+  {
+    include: [models.Message]
+  })
+
+  await models.User.create({
+    username: 'Louis',
+    messages: [
+      {
+        text: 'Best brother ever'
+      },
+      {
+        text: 'Pushing forward in life'
+      }
+    ]
+  },
+  {
+    include: [models.Message]
+  })
+}
+
