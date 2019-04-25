@@ -17,6 +17,10 @@ const server = new ApolloServer({
   context: async () => ({
     models,
     me: await models.User.findByLogin('Alice')
+  }),
+  formatError: err => ({
+    ...err,
+    message: err.message.replace('Validation error:', '').trim()
   })
 })
 
@@ -45,9 +49,9 @@ const createUsersWithMessages = async () => {
       }
     ]
   },
-  {
-    include: [models.Message]
-  })
+    {
+      include: [models.Message]
+    })
 
   await models.User.create({
     username: 'Louis',
@@ -60,7 +64,7 @@ const createUsersWithMessages = async () => {
       }
     ]
   },
-  {
-    include: [models.Message]
-  })
+    {
+      include: [models.Message]
+    })
 }
