@@ -43,18 +43,22 @@ sequelize.sync({
 const createUsersWithMessages = async () => {
   await models.User.create({
     username: 'Alice',
+    email: 'alice@alice.com',
+    password: 'alice',
     messages: [
       {
         text: 'Hello world!'
       }
     ]
   },
-    {
-      include: [models.Message]
-    })
+  {
+    include: [models.Message]
+  })
 
   await models.User.create({
     username: 'Louis',
+    email: 'louis@louis.com',
+    password: 'louis',
     messages: [
       {
         text: 'Best brother ever'
@@ -64,7 +68,7 @@ const createUsersWithMessages = async () => {
       }
     ]
   },
-    {
-      include: [models.Message]
-    })
+  {
+    include: [models.Message]
+  })
 }
