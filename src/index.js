@@ -48,7 +48,7 @@ sequelize.sync({
   force: eraseDatabaseOnSync
 }).then(async () => {
   if (eraseDatabaseOnSync) {
-    await createUsersWithMessages()
+    await createUsersWithMessages(new Date())
   }
 
   app.listen({
@@ -58,7 +58,7 @@ sequelize.sync({
   })
 })
 
-const createUsersWithMessages = async () => {
+const createUsersWithMessages = async date => {
   await models.User.create({
     username: 'Alice',
     email: 'alice@alice.com',
@@ -66,13 +66,14 @@ const createUsersWithMessages = async () => {
     role: 'ADMIN',
     messages: [
       {
-        text: 'Hello world!'
+        text: 'Hello world!',
+        createdAt: date.setSeconds(date.getSeconds() + 1)
       }
     ]
   },
-    {
-      include: [models.Message]
-    })
+  {
+    include: [models.Message]
+  })
 
   await models.User.create({
     username: 'Louis',
@@ -80,14 +81,16 @@ const createUsersWithMessages = async () => {
     password: 'louis9393',
     messages: [
       {
-        text: 'Best brother ever'
+        text: 'Best brother ever',
+        createdAt: date.setSeconds(date.getSeconds() + 1)
       },
       {
-        text: 'Pushing forward in life'
+        text: 'Pushing forward in life',
+        createdAt: date.setSeconds(date.getSeconds() + 1)
       }
     ]
   },
-    {
-      include: [models.Message]
-    })
+  {
+    include: [models.Message]
+  })
 }
