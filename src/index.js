@@ -1,7 +1,8 @@
 import 'dotenv/config'
 import cors from 'cors'
 import express from 'express'
-import { ApolloServer } from 'apollo-server-express'
+import { ApolloServer, AuthenticationError } from 'apollo-server-express'
+import jwt from 'jsonwebtoken'
 
 import schema from './schema'
 import resolvers from './resolvers'
@@ -11,14 +12,30 @@ const eraseDatabaseOnSync = true
 const app = express()
 app.use(cors())
 
+const getMe = async req => {
+  const token = req.headers['x-token']
+
+  if (token) {
+    try {
+      return jwt.verify(token, process.env.SECRET)
+    } catch (e) {
+      throw new AuthenticationError('Your session expired, please sign in again')
+    }
+  }
+}
+
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers,
-  context: async () => ({
-    models,
-    me: await models.User.findByLogin('Alice'),
-    secret: process.env.SECRET
-  }),
+  context: async ({ req }) => {
+    const me = await getMe(req)
+
+    return {
+      models,
+      me,
+      secret: process.env.SECRET
+    }
+  },
   formatError: err => ({
     ...err,
     message: err.message.replace('Validation error:', '').trim()
@@ -46,15 +63,16 @@ const createUsersWithMessages = async () => {
     username: 'Alice',
     email: 'alice@alice.com',
     password: 'alice9393',
+    role: 'ADMIN',
     messages: [
       {
         text: 'Hello world!'
       }
     ]
   },
-  {
-    include: [models.Message]
-  })
+    {
+      include: [models.Message]
+    })
 
   await models.User.create({
     username: 'Louis',
@@ -69,7 +87,7 @@ const createUsersWithMessages = async () => {
       }
     ]
   },
-  {
-    include: [models.Message]
-  })
+    {
+      include: [models.Message]
+    })
 }
