@@ -2,13 +2,12 @@ import 'dotenv/config'
 import cors from 'cors'
 import express from 'express'
 import { ApolloServer } from 'apollo-server-express'
-import uuidv4 from 'uuid/v4'
 
 import schema from './schema'
 import resolvers from './resolvers'
 import models, { sequelize } from './models'
 
-const eraseDatabaseOnSync = true;
+const eraseDatabaseOnSync = true
 const app = express()
 app.use(cors())
 
@@ -27,7 +26,7 @@ sequelize.sync({
   force: eraseDatabaseOnSync
 }).then(async () => {
   if (eraseDatabaseOnSync) {
-    await createUsersWithMessages();
+    await createUsersWithMessages()
   }
 
   app.listen({
@@ -65,4 +64,3 @@ const createUsersWithMessages = async () => {
     include: [models.Message]
   })
 }
-

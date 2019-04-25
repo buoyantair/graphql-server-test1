@@ -1,31 +1,38 @@
 
-
 export default {
   Query: {
     messages: async (parent, args, { models }) => {
-      return await models.Message.findAll();
+      return models.Message.findAll()
     },
     message: async (parent, { id }, { models }) => {
-      return await models.Message.findById(id);
-    },
+      return models.Message.findOne({
+        where: {
+          id
+        }
+      })
+    }
   },
 
   Mutation: {
     createMessage: async (parent, { text }, { me, models }) => {
-      return await models.Message.create({
+      return models.Message.create({
         text,
-        userId: me.id,
-      });
+        userId: me.id
+      })
     },
 
     deleteMessage: async (parent, { id }, { models }) => {
-      return await models.Message.destroy({ where: { id } });
-    },
+      return models.Message.destroy({ where: { id } })
+    }
   },
 
   Message: {
     user: async (message, args, { models }) => {
-      return await models.User.findById(message.userId);
-    },
-  },
-};
+      return models.User.findOne({
+        where: {
+          id: message.userId
+        }
+      })
+    }
+  }
+}

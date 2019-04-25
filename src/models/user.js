@@ -11,14 +11,14 @@ const user = (sequelize, DataTypes) => {
     })
   }
 
-  User.findByLogin =  async login => {
+  User.findByLogin = async login => {
     let user = await User.findOne({
       where: {
         username: login
       }
     })
 
-    if (!user){
+    if (!user) {
       user = await User.findOne({
         where: {
           email: login
@@ -26,10 +26,10 @@ const user = (sequelize, DataTypes) => {
       })
     }
 
-    return user;
+    return user
   }
 
   return User
 }
 
-export default user;
+export default user
