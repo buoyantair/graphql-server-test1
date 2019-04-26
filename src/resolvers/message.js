@@ -1,12 +1,23 @@
 import { combineResolvers } from 'graphql-resolvers'
 import { isAuthenticated, isMessageOwner } from './authorization'
+import * as Sequelize from 'sequelize';
 
 export default {
   Query: {
-    messages: async (parent, { offset = 0, limit = 100 }, { models }) => {
+    messages: async (parent, { cursor, limit = 100 }, { models }) => {
+      const cursorOptions = cursor
+        ? {
+          where: {
+            createdAt: {
+              [Sequelize.Op.lt]: cursor,
+            },
+          },
+        }
+        : {};
       return models.Message.findAll({
-        offset,
-        limit
+        order: [['createdAt', 'DESC']],
+        limit,
+        ...cursorOptions
       })
     },
     message: async (parent, { id }, { models }) => {
