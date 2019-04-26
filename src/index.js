@@ -69,7 +69,7 @@ const httpServer = http.createServer(app)
 server.installSubscriptionHandlers(httpServer)
 
 const isTest = !!process.env.TEST_DATABASE
-
+const port = process.env.PORT || 4000
 sequelize.sync({
   force: isTest
 }).then(async () => {
@@ -78,7 +78,7 @@ sequelize.sync({
   }
 
   httpServer.listen({
-    port: 4000
+    port,
   }, () => {
     console.log(`Apollo server is running at http://localhost:4000/graphql`)
   })
