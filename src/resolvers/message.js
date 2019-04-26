@@ -78,12 +78,8 @@ export default {
     }
   },
   Message: {
-    user: async (message, args, { models }) => {
-      return models.User.findOne({
-        where: {
-          id: message.userId
-        }
-      })
+    user: async (message, args, { loaders }) => {
+      return loaders.user.load(message.userId)
     }
   }
 }
