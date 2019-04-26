@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npx nodemon --exec babel-node src/index.js",
+    "start": "npx nodemon --exec npx babel-node src/index.js",
     "test-server": "TEST_DATABASE=graphqlserverteste2e npm start",
     "test": "npx mocha --require @babel/register 'src/**/*.spec.js'"
   },
