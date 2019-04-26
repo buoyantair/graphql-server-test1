@@ -14,11 +14,22 @@ export default {
           },
         }
         : {};
-      return models.Message.findAll({
+
+      const messages = await models.Message.findAll({
         order: [['createdAt', 'DESC']],
-        limit,
+        limit: limit + 1,
         ...cursorOptions
       })
+
+      const hasNextPage = messages.length > limit
+      const edges = hasNextPage ? messages.slice(0, -1) : messages
+      return {
+        edges,
+        pageInfo: {
+          endCursor: edges.length ? edges[edges.length - 1].createdAt : cursor,
+          hasNextPage
+        }
+      }
     },
     message: async (parent, { id }, { models }) => {
       return models.Message.findOne({
