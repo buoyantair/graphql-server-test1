@@ -3,11 +3,11 @@ import cors from 'cors'
 import express from 'express'
 import { ApolloServer, AuthenticationError } from 'apollo-server-express'
 import jwt from 'jsonwebtoken'
+import http from 'http'
 
 import schema from './schema'
 import resolvers from './resolvers'
 import models, { sequelize } from './models'
-
 const eraseDatabaseOnSync = true
 const app = express()
 app.use(cors())
@@ -27,14 +27,23 @@ const getMe = async req => {
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers,
-  context: async ({ req }) => {
-    const me = await getMe(req)
-
-    return {
-      models,
-      me,
-      secret: process.env.SECRET
+  context: async ({ req, connection }) => {
+    if (connection) {
+      return {
+        models
+      }
     }
+
+    if (req) {
+      const me = await getMe(req)
+
+      return {
+        models,
+        me,
+        secret: process.env.SECRET
+      }
+    }
+
   },
   formatError: err => ({
     ...err,
@@ -44,6 +53,9 @@ const server = new ApolloServer({
 
 server.applyMiddleware({ app, path: '/graphql' })
 
+const httpServer = http.createServer(app)
+server.installSubscriptionHandlers(httpServer)
+
 sequelize.sync({
   force: eraseDatabaseOnSync
 }).then(async () => {
@@ -51,7 +63,7 @@ sequelize.sync({
     await createUsersWithMessages(new Date())
   }
 
-  app.listen({
+  httpServer.listen({
     port: 4000
   }, () => {
     console.log(`Apollo server is running at http://localhost:4000/graphql`)
@@ -71,9 +83,9 @@ const createUsersWithMessages = async date => {
       }
     ]
   },
-  {
-    include: [models.Message]
-  })
+    {
+      include: [models.Message]
+    })
 
   await models.User.create({
     username: 'Louis',
@@ -90,7 +102,7 @@ const createUsersWithMessages = async date => {
       }
     ]
   },
-  {
-    include: [models.Message]
-  })
+    {
+      include: [models.Message]
+    })
 }

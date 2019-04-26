@@ -11,6 +11,14 @@ export default gql`
     deleteMessage(id: ID!): Boolean!
   }
 
+  extend type Subscription {
+    messageCreated: MessageCreated!
+  }
+
+  type MessageCreated {
+    message: Message!
+  }
+
   type MessageConnection {
     edges: [Message!]!
     pageInfo: PageInfo!

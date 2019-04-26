@@ -1,6 +1,8 @@
 import { combineResolvers } from 'graphql-resolvers'
-import { isAuthenticated, isMessageOwner } from './authorization'
 import * as Sequelize from 'sequelize';
+
+import { isAuthenticated, isMessageOwner } from './authorization'
+import pubsub, { EVENTS } from '../subscription'
 
 const toCursorHash = string => Buffer.from(string).toString('base64')
 const fromCursorHash = string => Buffer.from(string, 'base64').toString('ascii')
@@ -48,10 +50,18 @@ export default {
     createMessage: combineResolvers(
       isAuthenticated,
       async (parent, { text }, { me, models }) => {
-        return models.Message.create({
+        const message = await models.Message.create({
           text,
           userId: me.id
         })
+
+        pubsub.publish(EVENTS.MESSAGE.CREATED, {
+          messageCreated: {
+            message
+          }
+        })
+
+        return message
       }
     ),
     deleteMessage: combineResolvers(
@@ -62,7 +72,11 @@ export default {
       }
     )
   },
-
+  Subscription: {
+    messageCreated: {
+      subscribe: () => pubsub.asyncIterator(EVENTS.MESSAGE.CREATED)
+    }
+  },
   Message: {
     user: async (message, args, { models }) => {
       return models.User.findOne({
