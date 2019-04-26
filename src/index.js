@@ -8,7 +8,6 @@ import http from 'http'
 import schema from './schema'
 import resolvers from './resolvers'
 import models, { sequelize } from './models'
-const eraseDatabaseOnSync = true
 const app = express()
 app.use(cors())
 
@@ -56,10 +55,12 @@ server.applyMiddleware({ app, path: '/graphql' })
 const httpServer = http.createServer(app)
 server.installSubscriptionHandlers(httpServer)
 
+const isTest = !!process.env.TEST_DATABASE
+
 sequelize.sync({
-  force: eraseDatabaseOnSync
+  force: isTest
 }).then(async () => {
-  if (eraseDatabaseOnSync) {
+  if (isTest) {
     await createUsersWithMessages(new Date())
   }
 
