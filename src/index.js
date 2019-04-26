@@ -5,11 +5,12 @@ import { ApolloServer, AuthenticationError } from 'apollo-server-express'
 import jwt from 'jsonwebtoken'
 import http from 'http'
 import DataLoader from 'dataloader'
-import * as Sequelize from 'sequelize'
 
 import schema from './schema'
 import resolvers from './resolvers'
 import models, { sequelize } from './models'
+import loaders from './loaders'
+
 const app = express()
 app.use(cors())
 
@@ -25,25 +26,18 @@ const getMe = async req => {
   }
 }
 
-const batchUsers = async (keys, models) => {
-  const users = await models.User.findAll({
-    where: {
-      id: {
-        [Sequelize.Op.in]: keys,
-      }
-    }
-  })
-
-  return keys.map(key => users.find(user => user.id === key))
-}
-
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers,
   context: async ({ req, connection }) => {
     if (connection) {
       return {
-        models
+        models,
+        loaders: {
+          user: new DataLoader(keys =>
+            loaders.user.batchUsers(keys, models),
+          ),
+        }
       }
     }
 
@@ -55,7 +49,9 @@ const server = new ApolloServer({
         me,
         secret: process.env.SECRET,
         loaders: {
-          user: new DataLoader(keys => batchUsers(keys, models))
+          user: new DataLoader(keys =>
+            loaders.user.batchUsers(keys, models),
+          ),
         }
       }
     }
