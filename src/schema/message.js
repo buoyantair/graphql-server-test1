@@ -17,7 +17,7 @@ export default gql`
   }
 
   type PageInfo {
-    endCursor: Date!
+    endCursor: String!
     hasNextPage: Boolean!
   }
 
