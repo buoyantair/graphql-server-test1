@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npx nodemon --exec npx babel-node src/index.js",
+    "start": "npx nodemon --exec npx babel src/index.js",
     "test-server": "TEST_DATABASE=graphqlserverteste2e npm start",
     "test": "npx mocha --require @babel/register 'src/**/*.spec.js'"
   },
@@ -22,6 +22,7 @@
     "nodemon": "^1.18.9"
   },
   "dependencies": {
+    "@babel/cli": "^7.4.3",
     "apollo-server": "^2.4.8",
     "apollo-server-express": "^2.4.8",
     "bcrypt": "^3.0.6",
